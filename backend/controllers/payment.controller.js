@@ -6,6 +6,7 @@ import {
   getTrackingSnapshot,
 } from "../lib/order-tracking.js";
 import { stripe } from "../lib/stripe.js";
+import { buildClientUrl } from "../lib/runtime-config.js";
 
 const getPrimaryImage = (product) =>
   product?.image || product?.images?.[0] || "";
@@ -146,7 +147,7 @@ async function ensureOrderConfirmationEmail(orderDoc) {
     await sendOrderConfirmationEmail({
       order,
       customer,
-      trackingUrl: `${process.env.CLIENT_URL}/orders/${order._id}/tracking`,
+      trackingUrl: buildClientUrl(`/orders/${order._id}/tracking`),
       trackingSnapshot,
     });
 
@@ -230,8 +231,10 @@ export const createCheckoutSession = async (req, res) => {
       payment_method_types: ["card"],
       line_items: lineItems,
       mode: "payment",
-      success_url: `${process.env.CLIENT_URL}/purchase-success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.CLIENT_URL}/purchase-cancel`,
+      success_url: buildClientUrl(
+        "/purchase-success?session_id={CHECKOUT_SESSION_ID}"
+      ),
+      cancel_url: buildClientUrl("/purchase-cancel"),
       discounts: coupon
         ? [
             {

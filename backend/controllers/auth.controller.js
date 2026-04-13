@@ -1,5 +1,6 @@
 import User from "../models/user.model.js";
 import jwt from "jsonwebtoken";
+import { getCookieOptions } from "../lib/runtime-config.js";
 
 const generateTokens = (userId) => {
   const accessToken = jwt.sign({ userId }, process.env.ACCESS_TOKEN_SECRET, {
@@ -14,19 +15,13 @@ const generateTokens = (userId) => {
 };
 
 const setCookies = (res, accessToken, refreshToken) => {
-  res.cookie("accessToken", accessToken, {
-    httpOnly: true, // prevent XSS attacks, cross site scripting attack
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict", // prevents CSRF attack, cross-site request forgery attack
-    maxAge: 15 * 60 * 1000, // 15 minutes
-  });
+  res.cookie("accessToken", accessToken, getCookieOptions(15 * 60 * 1000));
+  res.cookie("refreshToken", refreshToken, getCookieOptions(7 * 24 * 60 * 60 * 1000));
+};
 
-  res.cookie("refreshToken", refreshToken, {
-    httpOnly: true, // prevent XSS attacks, cross site scripting attack
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "strict", // prevents CSRF attack, cross-site request forgery attack
-    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-  });
+const clearCookies = (res) => {
+  res.clearCookie("accessToken", getCookieOptions());
+  res.clearCookie("refreshToken", getCookieOptions());
 };
 
 export const signup = async (req, res) => {
@@ -81,8 +76,7 @@ export const login = async (req, res) => {
 
 export const logout = async (req, res) => {
   try {
-    res.clearCookie("accessToken");
-    res.clearCookie("refreshToken");
+    clearCookies(res);
     res.json({ message: "Logged out successfully" });
   } catch (error) {
     console.log("Error in logout controller", error.message);
@@ -107,17 +101,13 @@ export const refreshToken = async (req, res) => {
       { expiresIn: "15m" }
     );
 
-    res.cookie("accessToken", accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 15 * 60 * 1000,
-    });
+    res.cookie("accessToken", accessToken, getCookieOptions(15 * 60 * 1000));
 
     res.json({ message: "Token refreshed successfully" });
   } catch (error) {
     console.log("Error in refreshToken controller", error.message);
-    res.status(500).json({ message: "Server error", error: error.message });
+    clearCookies(res);
+    res.status(401).json({ message: "Invalid or expired refresh token" });
   }
 };
 

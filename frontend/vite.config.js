@@ -7,7 +7,7 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": {
-        target: "https://panipat-backend.onrender.com",
+        target: "http://localhost:5001",
         changeOrigin: true,
       },
     },

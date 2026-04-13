@@ -223,3 +223,6 @@ p4:
 make sure how email works perfectly , when order placed , email credentials are perfect, also implement filter logic in product page, based on (based on category wise etc ) dont break any exsiting website , also when user click on one product , it should open a detailed new page. where a detailed product description will be shown, (diuff images, product description price , rating etc.) 
 don't break any existing website or feature ask me if need any question
 
+p5:
+this is my live frontend code on vercel "https://panipat-frontend.vercel.app/" and this is my live backend on render "https://panipat-backend.onrender.com" , I want that my code works perfectly both on local and live (frontend should be perfetcly integrated with backend) both in dev and production mode.
+, "frontend folder" is dpeloyed on vercel, and current ecommerce mern copy dpeloyed on render , but in production my login functioanlity is not working cand owing error, (request is not working) change my code  such that my code works perfectly in  both frontend and backend.
