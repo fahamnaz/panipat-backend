@@ -10,6 +10,14 @@ const DEFAULT_FRONTEND_ORIGINS = [
 
 const normalizeUrl = (value = "") => value.trim().replace(/\/+$/, "");
 
+const parseHostname = (value = "") => {
+  try {
+    return new URL(value).hostname.toLowerCase();
+  } catch {
+    return "";
+  }
+};
+
 const parseUrlList = (...values) => {
   const urls = values
     .flatMap((value) => String(value || "").split(","))
@@ -39,12 +47,37 @@ export const CLIENT_URL =
     ? configuredClientUrl
     : DEFAULT_FRONTEND_URL;
 
+const canonicalFrontendHostname = parseHostname(CLIENT_URL);
+const canonicalFrontendLabel = canonicalFrontendHostname.split(".")[0] || "";
+
+const isTrustedVercelPreviewOrigin = (origin) => {
+  const originHostname = parseHostname(origin);
+
+  if (!originHostname.endsWith(".vercel.app")) {
+    return false;
+  }
+
+  if (!canonicalFrontendHostname.endsWith(".vercel.app")) {
+    return false;
+  }
+
+  return (
+    originHostname === canonicalFrontendHostname ||
+    originHostname.startsWith(`${canonicalFrontendLabel}-`)
+  );
+};
+
 export const isAllowedOrigin = (origin) => {
   if (!origin) {
     return true;
   }
 
-  return FRONTEND_ORIGINS.includes(normalizeUrl(origin));
+  const normalizedOrigin = normalizeUrl(origin);
+
+  return (
+    FRONTEND_ORIGINS.includes(normalizedOrigin) ||
+    isTrustedVercelPreviewOrigin(normalizedOrigin)
+  );
 };
 
 export const buildClientUrl = (path = "") => {

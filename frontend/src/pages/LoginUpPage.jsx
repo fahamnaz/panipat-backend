@@ -11,9 +11,9 @@ const LoginPage = () => {
 
   const { login, loading } = useUserStore();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    login(email, password);
+    await login(email, password);
   };
 
   return (
@@ -51,7 +51,10 @@ const LoginPage = () => {
               </label>
               <div className="mt-1 relative rounded-md shadow-sm">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Mail className="h-5 w-5 text-[var(--color-muted)]" aria-hidden="true" />
+                  <Mail
+                    className="h-5 w-5 text-[var(--color-muted)]"
+                    aria-hidden="true"
+                  />
                 </div>
                 <input
                   id="email"
@@ -74,7 +77,10 @@ const LoginPage = () => {
               </label>
               <div className="mt-1 relative rounded-md shadow-sm">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <Lock className="h-5 w-5 text-[var(--color-muted)]" aria-hidden="true" />
+                  <Lock
+                    className="h-5 w-5 text-[var(--color-muted)]"
+                    aria-hidden="true"
+                  />
                 </div>
                 <input
                   id="password"

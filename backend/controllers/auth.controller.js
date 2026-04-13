@@ -24,6 +24,15 @@ const clearCookies = (res) => {
   res.clearCookie("refreshToken", getCookieOptions());
 };
 
+const buildAuthResponse = (user, accessToken, refreshToken) => ({
+  _id: user._id,
+  name: user.name,
+  email: user.email,
+  role: user.role,
+  accessToken,
+  refreshToken,
+});
+
 export const signup = async (req, res) => {
   const { email, password, name } = req.body;
   try {
@@ -38,12 +47,7 @@ export const signup = async (req, res) => {
     const { accessToken, refreshToken } = generateTokens(user._id);
     setCookies(res, accessToken, refreshToken);
 
-    res.status(201).json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      role: user.role,
-    });
+    res.status(201).json(buildAuthResponse(user, accessToken, refreshToken));
   } catch (error) {
     console.log("Error in signup controller", error.message);
     res.status(500).json({ message: error.message });
@@ -59,12 +63,7 @@ export const login = async (req, res) => {
       const { accessToken, refreshToken } = generateTokens(user._id);
       setCookies(res, accessToken, refreshToken);
 
-      res.json({
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-      });
+      res.json(buildAuthResponse(user, accessToken, refreshToken));
     } else {
       res.status(400).json({ message: "Invalid email or password" });
     }
@@ -87,7 +86,10 @@ export const logout = async (req, res) => {
 // this will refresh the access token
 export const refreshToken = async (req, res) => {
   try {
-    const refreshToken = req.cookies.refreshToken;
+    const refreshToken =
+      req.cookies.refreshToken ||
+      req.body?.refreshToken ||
+      req.headers["x-refresh-token"];
 
     if (!refreshToken) {
       return res.status(401).json({ message: "No refresh token provided" });
@@ -103,7 +105,7 @@ export const refreshToken = async (req, res) => {
 
     res.cookie("accessToken", accessToken, getCookieOptions(15 * 60 * 1000));
 
-    res.json({ message: "Token refreshed successfully" });
+    res.json({ message: "Token refreshed successfully", accessToken });
   } catch (error) {
     console.log("Error in refreshToken controller", error.message);
     clearCookies(res);

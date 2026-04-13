@@ -1,7 +1,8 @@
 import axios from "axios";
+import { getAccessToken } from "./auth-storage";
 
 const LIVE_API_BASE_URL = "https://panipat-backend.onrender.com/api";
-const LOCAL_API_BASE_URL = "http://localhost:5001/api";
+const LOCAL_API_BASE_URL = "http://127.0.0.1:5001/api";
 
 const normalizeApiUrl = (value) => {
   if (!value) {
@@ -24,7 +25,7 @@ const resolveApiBaseUrl = () => {
   }
 
   const isLocalHost = ["localhost", "127.0.0.1"].includes(
-    window.location.hostname
+    window.location.hostname,
   );
 
   if (import.meta.env.DEV) {
@@ -37,6 +38,16 @@ const resolveApiBaseUrl = () => {
 const axiosInstance = axios.create({
   baseURL: resolveApiBaseUrl(),
   withCredentials: true,
+});
+
+axiosInstance.interceptors.request.use((config) => {
+  const accessToken = getAccessToken();
+
+  if (accessToken) {
+    config.headers.Authorization = `Bearer ${accessToken}`;
+  }
+
+  return config;
 });
 
 export default axiosInstance;
